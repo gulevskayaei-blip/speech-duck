@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Чтение с уточкой 🦆</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Comic Sans MS', Arial, sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    background: #87CEEB;
+  }
+
+  /* Экран учителя */
+  #teacherScreen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+    background: linear-gradient(to bottom, #87CEEB 0%, #FFB6C1 100%);
+  }
+  #teacherScreen h1 { color: #fff; text-shadow: 3px 3px 0 #FF6B6B; margin-bottom: 20px; font-size: 48px; }
+  #teacherScreen .duck-preview { font-size: 100px; animation: bounce 1s infinite; }
+  @keyframes bounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-20px);} }
+  #teacherScreen textarea {
+    width: 90%; max-width: 700px; height: 200px;
+    padding: 20px; font-size: 20px;
+    border: 4px solid #FFD700; border-radius: 15px;
+    resize: none; font-family: inherit;
+    background: white;
+  }
+  #teacherScreen button {
+    margin-top: 20px; padding: 18px 50px; font-size: 26px;
+    background: #FF6B6B; color: white; border: none; border-radius: 50px;
+    cursor: pointer; box-shadow: 0 6px 0 #C94444; transition: all 0.1s;
+    font-family: inherit;
+  }
+  #teacherScreen button:hover { transform: translateY(-2px); box-shadow: 0 8px 0 #C94444; }
+  #teacherScreen button:active { transform: translateY(4px); box-shadow: 0 2px 0 #C94444; }
+  #teacherScreen p { color: white; margin-top: 20px; font-size: 16px; background: rgba(0,0,0,0.3); padding: 10px 20px; border-radius: 20px; }
+
+  /* Игровой экран */
+  #gameScreen { display: none; position: relative; height: 100vh; overflow: hidden; }
+
+  /* Небо и солнце */
+  .sky {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 65%;
+    background: linear-gradient(to bottom, #87CEEB 0%, #B0E0E6 100%);
+  }
+  .sun {
+    position: absolute; top: 40px; right: 80px;
+    width: 80px; height: 80px;
+    background: radial-gradient(circle, #FFEB3B 30%, #FFC107 70%, transparent 100%);
+    border-radius: 50%;
+    box-shadow: 0 0 60px #FFEB3B;
+    animation: sunPulse 3s infinite;
+  }
+  @keyframes sunPulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.1);} }
+
+  /* Облака */
+  .cloud {
+    position: absolute;
+    background: white;
+    border-radius: 50px;
+    opacity: 0.9;
+  }
+  .cloud::before, .cloud::after {
+    content: ''; position: absolute; background: white; border-radius: 50%;
+  }
+  .cloud1 { width: 100px; height: 35px; top: 60px; animation: cloudMove 25s linear infinite; }
+  .cloud1::before { width: 50px; height: 50px; top: -20px; left: 15px; }
+  .cloud1::after { width: 40px; height: 40px; top: -15px; right: 15px; }
+  .cloud2 { width: 80px; height: 28px; top: 120px; animation: cloudMove 35s linear infinite; animation-delay: -10s; }
+  .cloud2::before { width: 40px; height: 40px; top: -18px; left: 10px; }
+  .cloud2::after { width: 35px; height: 35px; top: -12px; right: 10px; }
+  .cloud3 { width: 120px; height: 40px; top: 180px; animation: cloudMove 30s linear infinite; animation-delay: -20s; }
+  .cloud3::before { width: 55px; height: 55px; top: -25px; left: 20px; }
+  .cloud3::after { width: 45px; height: 45px; top: -18px; right: 20px; }
+  @keyframes cloudMove { from{left:110%;} to{left:-200px;} }
+
+  /* Земля */
+  .ground {
+    position: absolute; bottom: 0; left: 0;
+    width: 100%; height: 35%;
+    background: linear-gradient(to bottom, #90EE90 0%, #7CB342 20%, #558B2F 100%);
+  }
+  .ground-pattern {
+    position: absolute; top: 0; left: 0;
+    width: 200%; height: 100%;
+    background-image: 
+      radial-gradient(circle at 20% 30%, #558B2F 2px, transparent 3px),
+      radial-gradient(circle at 60% 70%, #558B2F 2px, transparent 3px),
+      radial-gradient(circle at 80% 40%, #558B2F 2px, transparent 3px);
+    background-size: 100px 100px;
+    animation: groundMove 3s linear infinite;
+  }
+  @keyframes groundMove { from{transform:translateX(0);} to{transform:translateX(-100px);} }
+
+  /* Дорожка */
+  .road {
+    position: absolute; bottom: 30%; left: 0;
+    width: 100%; height: 80px;
+    background: #8B4513;
+    border-top: 4px solid #654321;
+    border-bottom: 4px solid #654321;
+  }
+  .road-lines {
+    position: absolute; top: 50%; left: 0;
+    width: 200%; height: 4px;
+    background: repeating-linear-gradient(90deg, #FFEB3B 0 30px, transparent 30px 60px);
+    transform: translateY(-50%);
+    animation: roadMove 1s linear infinite;
+  }
+  @keyframes roadMove { from{transform:translateY(-50%) translateX(0);} to{transform:translateY(-50%) translateX(-60px);} }
+
+  /* Контейнер уточки и препятствий */
+  #gameContainer {
+    position: absolute;
+    bottom: calc(30% + 80px);
+    left: 0;
+    width: 100%;
+    height: 200px;
+    pointer-events: none;
+  }
+
+  /* Уточка */
+  #duck {
+    position: absolute;
+    bottom: 0;
+    left: 15%;
+    width: 120px;
+    height: 120px;
+    transition: transform 0.1s;
+    z-index: 10;
+  }
+  #duck.jumping { animation: jump 0.7s ease-out; }
+  #duck.crash { animation: crash 1.2s ease-in; }
+  @keyframes jump {
+    0% { transform: translateY(0) rotate(0deg); }
+    40% { transform: translateY(-150px) rotate(-10deg); }
+    60% { transform: translateY(-150px) rotate(5deg); }
+    100% { transform: translateY(0) rotate(0deg); }
+  }
+  @keyframes crash {
+    0% { transform: translateY(0) rotate(0deg); }
+    20% { transform: translateY(-30px) rotate(-30deg); }
+    40% { transform: translateY(20px) rotate(60deg); }
+    60% { transform: translateY(-10px) rotate(180deg); }
+    80% { transform: translateY(10px) rotate(300deg); }
+    100% { transform: translateY(0) rotate(360deg); }
+  }
+
+  /* Анимация лапок */
+  .leg-left { animation: legRunLeft 0.3s linear infinite; transform-origin: top center; }
+  .leg-right { animation: legRunRight 0.3s linear infinite; transform-origin: top center; }
+  @keyframes legRunLeft {
+    0%, 100% { transform: rotate(-20deg); }
+    50% { transform: rotate(20deg); }
+  }
+  @keyframes legRunRight {
+    0%, 100% { transform: rotate(20deg); }
+    50% { transform: rotate(-20deg); }
+  }
+
+  /* Крыло машет */
+  .wing { animation: wingFlap 0.4s ease-in-out infinite; transform-origin: center; }
+  @keyframes wingFlap {
+    0%, 100% { transform: rotate(-5deg); }
+    50% { transform: rotate(10deg); }
+  }
+
+  /* Глаз моргает */
+  .eye-lid { animation: blink 3s infinite; transform-origin: center; }
+  @keyframes blink {
+    0%, 95%, 100% { transform: scaleY(0); }
+    97% { transform: scaleY(1); }
+  }
+
+  /* Препятствия */
+  .obstacle {
+    position: absolute;
+    bottom: 0;
+    font-size: 60px;
+    animation: obstacleMove 4s linear forwards;
+    z-index: 5;
+  }
+  @keyframes obstacleMove {
+    from { left: 110%; }
+    to { left: -100px; }
+  }
+
+  /* Яма */
+  .pit {
+    position: absolute;
+    bottom: -10px;
+    width: 100px;
+    height: 30px;
+    background: radial-gradient(ellipse at center, #000 0%, #333 70%, transparent 100%);
+    border-radius: 50%;
+    animation: pitMove 4s linear forwards;
+    z-index: 3;
+  }
+  @keyframes pitMove {
+    from { left: 110%; }
+    to { left: -150px; }
+  }
+
+  /* Звёздочки при падении */
+  .star {
+    position: absolute;
+    font-size: 30px;
+    animation: starFly 1s ease-out forwards;
+    pointer-events: none;
+    z-index: 20;
+  }
+  @keyframes starFly {
+    0% { opacity: 1; transform: translate(0,0) rotate(0deg) scale(0.5); }
+    100% { opacity: 0; transform: translate(var(--tx), var(--ty)) rotate(720deg) scale(1.5); }
+  }
+
+  /* Облачко с текстом при ошибке */
+  .oops-bubble {
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #F44336;
+    border: 3px solid #F44336;
+    animation: bubblePop 1.5s ease-out forwards;
+    z-index: 30;
+  }
+  .oops-bubble::after {
+    content: ''; position: absolute; bottom: -10px; left: 50%;
+    transform: translateX(-50%);
+    border: 10px solid transparent; border-top-color: white;
+  }
+  @keyframes bubblePop {
+    0% { opacity: 0; transform: translateX(-50%) scale(0.3); }
+    20% { opacity: 1; transform: translateX(-50%) scale(1.2); }
+    40% { transform: translateX(-50%) scale(1); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-30px); }
+  }
+
+  /* Текст для чтения */
+  #textArea {
+    position: absolute;
+    top: 20px; left: 50%;
+    transform: translateX(-50%);
+    width: 92%; max-width: 900px;
+    background: rgba(255,255,255,0.97);
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+    font-size: 30px;
+    line-height: 1.7;
+    text-align: center;
+    max-height: 35vh;
+    overflow-y: auto;
+    border: 4px solid #FFD700;
+    z-index: 50;
+  }
+  .word {
+    display: inline-block;
+    margin: 0 3px;
+    padding: 3px 7px;
+    border-radius: 8px;
+    transition: all 0.3s;
+  }
+  .word.current {
+    background: #FFD700;
+    color: #333;
+    transform: scale(1.2);
+    box-shadow: 0 4px 10px rgba(255,215,0,0.6);
+    font-weight: bold;
+  }
+  .word.correct {
+    background: #4CAF50;
+    color: white;
+  }
+  .word.wrong {
+    background: #F44336;
+    color: white;
+    animation: shake 0.5s;
+  }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+  }
+
+  /* Счёт */
+  #score {
+    position: absolute;
+    top: 20px; right: 20px;
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    padding: 12px 25px;
+    border-radius: 30px;
+    font-size: 26px;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    z-index: 60;
+    border: 3px solid white;
+  }
+
+  /* Статус микрофона */
+  #micStatus {
+    position: absolute;
+    bottom: 15px; left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.75);
+    color: white;
+    padding: 12px 25px;
+    border-radius: 30px;
+    font-size: 18px;
+    display: flex; align-items: center; gap: 10px;
+    z-index: 60;
+  }
+  .mic-dot {
+    width: 15px; height: 15px;
+    background: #F44336;
+    border-radius: 50%;
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.3); }
+  }
+
+  /* Мигание экрана */
+  #flashOverlay {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: red;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 100;
+  }
+  #flashOverlay.active { animation: flash 0.5s; }
+  @keyframes flash {
+    0%,100% { opacity: 0; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Финальный экран */
+  #finishScreen {
+    display: none;
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    z-index: 2000;
+    justify-content: center; align-items: center;
+    flex-direction: column;
+    color: white; text-align: center;
+  }
+  #finishScreen h1 { font-size: 60px; margin-bottom: 20px; }
+  #finishScreen .big-duck { font-size: 120px; animation: bounce 1s infinite; }
+  #finishScreen p { font-size: 28px; margin-bottom: 30px; }
+  #finishScreen button {
+    padding: 18px 50px; font-size: 24px;
+    background: #4CAF50; color: white;
+    border: none; border-radius: 50px;
+    cursor: pointer; box-shadow: 0 6px 0 #2E7D32;
+    font-family: inherit;
+  }
+</style>
+</head>
+<body>
+
+<!-- Экран учителя -->
+<div id="teacherScreen">
+  <div class="duck-preview">🦆</div>
+  <h1>Чтение с уточкой</h1>
+  <textarea id="textinput" placeholder="Введите любой текст для чтения...">Мама мыла раму. Папа читал газету. Катя играла с кошкой. На улице светило солнце. Птицы пели песни.</textarea>
+  <button onclick="startLesson()">🎤 Начать урок</button>
+  <p>⚠️ Работает в Chrome, Edge, Яндекс.Браузере. Разрешите доступ к микрофону.</p>
+</div>
+
+<!-- Игровой экран -->
+<div id="gameScreen">
+  <div class="sky"></div>
+  <div class="sun"></div>
+  <div class="cloud cloud1"></div>
+  <div class="cloud cloud2"></div>
+  <div class="cloud cloud3"></div>
+  <div class="ground"><div class="ground-pattern"></div></div>
+  <div class="road"><div class="road-lines"></div></div>
+
+  <div id="score">⭐ 0</div>
+
+  <!-- Контейнер игры -->
+  <div id="gameContainer">
+    <!-- SVG уточка -->
+    <svg id="duck" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+      <!-- Тело -->
+      <ellipse cx="55" cy="70" rx="38" ry="28" fill="#FFEB3B" stroke="#F9A825" stroke-width="2"/>
+      <!-- Крыло -->
+      <ellipse class="wing" cx="55" cy="65" rx="22" ry="15" fill="#FDD835" stroke="#F9A825" stroke-width="2"/>
+      <!-- Голова -->
+      <circle cx="85" cy="40" r="22" fill="#FFEB3B" stroke="#F9A825" stroke-width="2"/>
+      <!-- Хохолок -->
+      <path d="M 80 20 Q 85 10 90 18 Q 92 12 95 20" fill="#FDD835" stroke="#F9A825" stroke-width="1.5"/>
+      <!-- Клюв -->
+      <path d="M 100 38 L 118 42 L 100 46 Z" fill="#FF9800" stroke="#E65100" stroke-width="1.5"/>
+      <line x1="100" y1="42" x2="115" y2="42" stroke="#E65100" stroke-width="1"/>
+      <!-- Глаз -->
+      <circle cx="92" cy="35" r="5" fill="white"/>
+      <circle cx="93" cy="35" r="3" fill="black"/>
+      <circle cx="94" cy="34" r="1" fill="white"/>
+      <!-- Веко для моргания -->
+      <ellipse class="eye-lid" cx="92" cy="35" rx="5" ry="5" fill="#FFEB3B"/>
+      <!-- Щёчка -->
+      <circle cx="88" cy="48" r="3" fill="#FFAB91" opacity="0.6"/>
+      <!-- Левая лапка -->
+      <g class="leg-left">
+        <rect x="45" y="95" width="4" height="15" fill="#FF9800"/>
+        <path d="M 40 110 L 52 110 L 50 115 L 42 115 Z" fill="#FF9800" stroke="#E65100" stroke-width="1"/>
+      </g>
+      <!-- Правая лапка -->
+      <g class="leg-right">
+        <rect x="65" y="95" width="4" height="15" fill="#FF9800"/>
+        <path d="M 60 110 L 72 110 L 70 115 L 62 115 Z" fill="#FF9800" stroke="#E65100" stroke-width="1"/>
+      </g>
+      <!-- Хвостик -->
+      <path d="M 20 65 Q 10 60 15 70 Q 8 72 18 75 Z" fill="#FDD835" stroke="#F9A825" stroke-width="1.5"/>
+    </svg>
+  </div>
+
+  <!-- Текст для чтения -->
+  <div id="textArea"></div>
+
+  <!-- Статус микрофона -->
+  <div id="micStatus">
+    <div class="mic-dot"></div>
+    <span>🎤 Слушаю... Читайте текущее слово</span>
+  </div>
+
+  <div id="flashOverlay"></div>
+</div>
+
+<!-- Финальный экран -->
+<div id="finishScreen">
+  <div class="big-duck">🦆</div>
+  <h1>🎉 Ура! Урок окончен!</h1>
+  <p id="finalScore">Отлично!</p>
+  <button onclick="location.reload()">🔄 Новый урок</button>
+</div>
+
+<script>
+let words = [];
+let currentWordIndex = 0;
+let score = 0;
+let recognition = null;
+let isListening = false;
+let obstacleInterval = null;
+let isJumping = false;
+let isCrashing = false;
+
+function startLesson() {
+  const text = document.getElementById('textinput').value.trim();
+  if (!text) { alert('Введите текст!'); return; }
+
+  words = text.split(/\s+/).filter(w => w.length > 0);
+  currentWordIndex = 0;
+  score = 0;
+
+  renderWords();
+  document.getElementById('teacherScreen').style.display = 'none';
+  document.getElementById('gameScreen').style.display = 'block';
+
+  startObstacles();
+  startRecognition();
+}
+
+function renderWords() {
+  const area = document.getElementById('textArea');
+  area.innerHTML = words.map((w, i) => {
+    let cls = 'word';
+    if (i < currentWordIndex) cls += ' correct';
+    else if (i === currentWordIndex) cls += ' current';
+    return `<span class="${cls}" data-index="${i}">${w}</span>`;
+  }).join(' ');
+
+  const current = area.querySelector('.word.current');
+  if (current) current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function startRecognition() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert('Ваш браузер не поддерживает распознавание речи. Используйте Chrome или Edge.');
+    return;
+  }
+
+  recognition = new SpeechRecognition();
+  recognition.lang = 'ru-RU';
+  recognition.continuous = true;
+  recognition.interimResults = true;
+
+  recognition.onresult = (event) => {
+    let finalTranscript = '';
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript;
+    }
+    if (finalTranscript) processSpeech(finalTranscript.trim());
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error === 'not-allowed') alert('Разрешите доступ к микрофону!');
+  };
+
+  recognition.onend = () => {
+    if (isListening) recognition.start();
+  };
+
+  isListening = true;
+  recognition.start();
+}
+
+function processSpeech(text) {
+  if (currentWordIndex >= words.length || isCrashing) return;
+
+  const spokenWords = text.toLowerCase().replace(/[.,!?;:]/g, '').split(/\s+/).filter(w => w);
+  if (spokenWords.length === 0) return;
+
+  const spoken = spokenWords[0];
+  const expected = words[currentWordIndex].toLowerCase().replace(/[.,!?;:]/g, '');
+
+  if (spoken === expected) {
+    onCorrect();
+  } else {
+    onWrong();
+  }
+}
+
+function onCorrect() {
+  if (isJumping) return;
+  score += 10;
+  document.getElementById('score').textContent = '⭐ ' + score;
+
+  const duck = document.getElementById('duck');
+  isJumping = true;
+  duck.classList.remove('jumping');
+  void duck.offsetWidth;
+  duck.classList.add('jumping');
+  setTimeout(() => { duck.classList.remove('jumping'); isJumping = false; }, 700);
+
+  currentWordIndex++;
+  renderWords();
+
+  if (currentWordIndex >= words.length) finishLesson();
+}
+
+function onWrong() {
+  if (isCrashing) return;
+  isCrashing = true;
+
+  // Мигание экрана
+  const flash = document.getElementById('flashOverlay');
+  flash.classList.remove('active');
+  void flash.offsetWidth;
+  flash.classList.add('active');
+
+  // Слово красное
+  const current = document.querySelector('.word.current');
+  if (current) {
+    current.classList.add('wrong');
+    setTimeout(() => current.classList.remove('wrong'), 600);
+  }
+
+  // Уточка падает
+  const duck = document.getElementById('duck');
+  duck.classList.remove('crash');
+  void duck.offsetWidth;
+  duck.classList.add('crash');
+
+  // Звёздочки над головой
+  spawnStars();
+
+  // Облачко "Ой!"
+  const bubble = document.createElement('div');
+  bubble.className = 'oops-bubble';
+  const oops = ['Ой!', 'Бабах!', 'Бдыщ!', 'Ох!', 'Упс!'];
+  bubble.textContent = oops[Math.floor(Math.random() * oops.length)];
+  duck.appendChild(bubble);
+  setTimeout(() => bubble.remove(), 1500);
+
+  setTimeout(() => {
+    duck.classList.remove('crash');
+    isCrashing = false;
+  }, 1200);
+}
+
+function spawnStars() {
+  const duck = document.getElementById('duck');
+  const rect = duck.getBoundingClientRect();
+  const container = document.getElementById('gameContainer');
+  const cRect = container.getBoundingClientRect();
+
+  for (let i = 0; i < 5; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.textContent = ['⭐', '💫', '✨', '🌟'][Math.floor(Math.random() * 4)];
+    const tx = (Math.random() - 0.5) * 150;
+    const ty = -50 - Math.random() * 100;
+    star.style.setProperty('--tx', tx + 'px');
+    star.style.setProperty('--ty', ty + 'px');
+    star.style.left = (rect.left - cRect.left + rect.width / 2) + 'px';
+    star.style.top = (rect.top - cRect.top) + 'px';
+    container.appendChild(star);
+    setTimeout(() => star.remove(), 1000);
+  }
+}
+
+function startObstacles() {
+  obstacleInterval = setInterval(() => {
+    if (Math.random() < 0.3) {
+      // Яма
+      const pit = document.createElement('div');
+      pit.className = 'pit';
+      document.getElementById('gameContainer').appendChild(pit);
+      setTimeout(() => pit.remove(), 4000);
+    } else {
+      // Препятствие
+      const obs = document.createElement('div');
+      obs.className = 'obstacle';
+      const obstacles = ['🌵', '🪨', '🌲', '🍄', '🪵', '🌻'];
+      obs.textContent = obstacles[Math.floor(Math.random() * obstacles.length)];
+      document.getElementById('gameContainer').appendChild(obs);
+      setTimeout(() => obs.remove(), 4000);
+    }
+  }, 2200);
+}
+
+function finishLesson() {
+  isListening = false;
+  if (recognition) recognition.stop();
+  clearInterval(obstacleInterval);
+
+  document.getElementById('finalScore').textContent = `Вы прочитали все слова! Счёт: ${score} ⭐`;
+  document.getElementById('finishScreen').style.display = 'flex';
+}
+</script>
+</body>
+</html>
