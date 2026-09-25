@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>🦆 Pixel Duck Reading</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
@@ -36,7 +39,7 @@
     line-height: 1.5;
   }
   #teacherScreen .pixel-duck {
-    width: 120px; height: 120px;
+    font-size: 100px;
     margin-bottom: 20px;
     animation: bounce 1s infinite;
   }
@@ -65,6 +68,8 @@
   }
   .pixel-btn:hover { background: #FF3B30; }
   .pixel-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #000; }
+  .pixel-btn.green { background: #00A850; }
+  .pixel-btn.green:hover { background: #00C853; }
   
   #teacherScreen p {
     color: white; margin-top: 20px; font-size: 10px;
@@ -75,25 +80,10 @@
 
   #gameScreen { display: none; position: relative; height: 100vh; overflow: hidden; background: #5C94FC; }
 
-  .sky {
-    position: absolute; top: 0; left: 0;
-    width: 100%; height: 65%;
-    background: #5C94FC;
-  }
+  .sky { position: absolute; top: 0; left: 0; width: 100%; height: 65%; background: #5C94FC; }
+  .sun { position: absolute; top: 30px; right: 60px; width: 60px; height: 60px; background: #FFD800; border: 4px solid #000; }
 
-  .sun {
-    position: absolute; top: 30px; right: 60px;
-    width: 60px; height: 60px;
-    background: #FFD800;
-    border: 4px solid #000;
-  }
-
-  .cloud {
-    position: absolute;
-    background: white;
-    border: 3px solid #000;
-    animation: cloudMove 25s linear infinite;
-  }
+  .cloud { position: absolute; background: white; border: 3px solid #000; animation: cloudMove 25s linear infinite; }
   .cloud1 { width: 80px; height: 30px; top: 50px; }
   .cloud1::before { content:''; position:absolute; width:40px; height:40px; background:white; border:3px solid #000; top:-25px; left:10px; }
   .cloud1::after { content:''; position:absolute; width:30px; height:30px; background:white; border:3px solid #000; top:-18px; right:10px; }
@@ -103,62 +93,25 @@
   .cloud3::before { content:''; position:absolute; width:45px; height:45px; background:white; border:3px solid #000; top:-28px; left:15px; }
   @keyframes cloudMove { from{left:110%;} to{left:-200px;} }
 
-  .hill {
-    position: absolute;
-    bottom: 35%;
-    width: 200px; height: 100px;
-    background: #00A850;
-    border: 4px solid #000;
-    border-radius: 100px 100px 0 0 / 80px 80px 0 0;
-  }
-  .hill1 { left: 10%; }
+  .hill { position: absolute; bottom: 35%; background: #00A850; border: 4px solid #000; border-radius: 100px 100px 0 0 / 80px 80px 0 0; }
+  .hill1 { left: 10%; width: 200px; height: 100px; }
   .hill2 { left: 60%; width: 150px; height: 70px; }
 
   .ground {
-    position: absolute; bottom: 0; left: 0;
-    width: 100%; height: 35%;
-    background: 
-      repeating-linear-gradient(90deg, #C84C0C 0 40px, #000 40px 44px),
-      repeating-linear-gradient(0deg, #C84C0C 0 20px, #000 20px 24px),
-      #C84C0C;
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 35%;
+    background: repeating-linear-gradient(90deg, #C84C0C 0 40px, #000 40px 44px),
+                repeating-linear-gradient(0deg, #C84C0C 0 20px, #000 20px 24px), #C84C0C;
     background-blend-mode: multiply;
     border-top: 4px solid #000;
   }
 
-  .road {
-    position: absolute; bottom: 35%; left: 0;
-    width: 100%; height: 60px;
-    background: #E59400;
-    border-top: 4px solid #000;
-    border-bottom: 4px solid #000;
-  }
-  .road-lines {
-    position: absolute; top: 50%; left: 0;
-    width: 200%; height: 8px;
-    background: repeating-linear-gradient(90deg, #FFF 0 30px, transparent 30px 60px);
-    transform: translateY(-50%);
-    animation: roadMove 1s linear infinite;
-  }
+  .road { position: absolute; bottom: 35%; left: 0; width: 100%; height: 60px; background: #E59400; border-top: 4px solid #000; border-bottom: 4px solid #000; }
+  .road-lines { position: absolute; top: 50%; left: 0; width: 200%; height: 8px; background: repeating-linear-gradient(90deg, #FFF 0 30px, transparent 30px 60px); transform: translateY(-50%); animation: roadMove 1s linear infinite; }
   @keyframes roadMove { from{transform:translateY(-50%) translateX(0);} to{transform:translateY(-50%) translateX(-60px);} }
 
-  #gameContainer {
-    position: absolute;
-    bottom: calc(35% + 60px);
-    left: 0;
-    width: 100%;
-    height: 200px;
-    pointer-events: none;
-  }
+  #gameContainer { position: absolute; bottom: calc(35% + 60px); left: 0; width: 100%; height: 200px; pointer-events: none; }
 
-  #duck {
-    position: absolute;
-    bottom: 0;
-    left: 15%;
-    width: 96px;
-    height: 96px;
-    z-index: 10;
-    image-rendering: pixelated;
-  }
+  #duck { position: absolute; bottom: 0; left: 15%; width: 96px; height: 96px; z-index: 10; image-rendering: pixelated; }
   #duck.jumping { animation: jump 0.7s ease-out; }
   #duck.crash { animation: crash 1.2s ease-in; }
   @keyframes jump {
@@ -186,143 +139,92 @@
   .eye-lid { animation: blink 3s infinite; transform-origin: center; }
   @keyframes blink { 0%,95%,100%{transform:scaleY(0);} 97%{transform:scaleY(1);} }
 
-  .obstacle {
-    position: absolute;
-    bottom: 0;
-    width: 80px;
-    height: 80px;
-    animation: obstacleMove 4s linear forwards;
-    z-index: 15;
-    image-rendering: pixelated;
-  }
-  @keyframes obstacleMove {
-    from { left: 110%; }
-    to { left: -100px; }
-  }
+  .obstacle { position: absolute; bottom: 0; font-size: 70px; animation: obstacleMove 4s linear forwards; z-index: 15; }
+  @keyframes obstacleMove { from { left: 110%; } to { left: -100px; } }
 
-  .pit {
-    position: absolute;
-    bottom: -10px;
-    width: 100px;
-    height: 30px;
-    background: #000;
-    border: 3px solid #000;
-    animation: pitMove 4s linear forwards;
-    z-index: 15;
-  }
-  @keyframes pitMove {
-    from { left: 110%; }
-    to { left: -150px; }
-  }
+  .pit { position: absolute; bottom: -10px; width: 100px; height: 30px; background: #000; border: 3px solid #333; animation: pitMove 4s linear forwards; z-index: 15; }
+  @keyframes pitMove { from { left: 110%; } to { left: -150px; } }
 
   #textArea {
-    position: absolute;
-    top: 20px; left: 50%;
-    transform: translateX(-50%);
-    width: 92%; max-width: 900px;
-    background: rgba(255,255,255,0.97);
-    padding: 25px;
-    border-radius: 0;
-    border: 4px solid #000;
-    box-shadow: 8px 8px 0 #000;
-    font-size: 24px;
-    line-height: 1.8;
-    text-align: center;
-    max-height: 35vh;
-    overflow-y: auto;
-    z-index: 50;
+    position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+    width: 92%; max-width: 900px; background: rgba(255,255,255,0.97);
+    padding: 25px; border: 4px solid #000; box-shadow: 8px 8px 0 #000;
+    font-size: 22px; line-height: 1.8; text-align: center;
+    max-height: 35vh; overflow-y: auto; z-index: 50;
     font-family: 'Press Start 2P', monospace;
   }
-  .word {
-    display: inline-block;
-    margin: 0 3px;
-    padding: 3px 7px;
-    transition: all 0.3s;
-  }
-  .word.current {
-    background: #FFD800;
-    color: #000;
-    transform: scale(1.2);
-    border: 3px solid #000;
-    font-weight: bold;
-  }
-  .word.correct {
-    background: #00A850;
-    color: white;
-    border: 3px solid #000;
-  }
-  .word.wrong {
+  .word { display: inline-block; margin: 0 3px; padding: 3px 7px; transition: all 0.3s; }
+  .word.current { background: #FFD800; color: #000; transform: scale(1.2); border: 3px solid #000; font-weight: bold; }
+  .word.correct { background: #00A850; color: white; border: 3px solid #000; }
+  .word.wrong { background: #E52521; color: white; border: 3px solid #000; animation: shake 0.5s; }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+
+  #score { position: absolute; top: 20px; right: 20px; background: #FFD800; padding: 12px 25px; font-size: 18px; font-weight: bold; border: 4px solid #000; box-shadow: 4px 4px 0 #000; z-index: 60; font-family: 'Press Start 2P', monospace; }
+
+  /* Кнопка включения микрофона */
+  #micButton {
+    position: absolute;
+    bottom: 20px; left: 50%;
+    transform: translateX(-50%);
+    padding: 20px 40px;
+    font-size: 14px;
     background: #E52521;
     color: white;
-    border: 3px solid #000;
-    animation: shake 0.5s;
+    border: 4px solid #000;
+    cursor: pointer;
+    font-family: 'Press Start 2P', monospace;
+    box-shadow: 0 6px 0 #000;
+    z-index: 70;
+    text-transform: uppercase;
+    animation: pulseBtn 1.5s infinite;
   }
-  @keyframes shake {
-    0%,100% { transform: translateX(0); }
-    25% { transform: translateX(-10px); }
-    75% { transform: translateX(10px); }
+  @keyframes pulseBtn {
+    0%,100% { transform: translateX(-50%) scale(1); }
+    50% { transform: translateX(-50%) scale(1.05); }
+  }
+  #micButton.active {
+    background: #00A850;
+    animation: none;
   }
 
-  #score {
+  /* Что услышал микрофон */
+  #heardText {
     position: absolute;
-    top: 20px; right: 20px;
-    background: #FFD800;
-    padding: 12px 25px;
-    font-size: 20px;
-    font-weight: bold;
-    border: 4px solid #000;
-    box-shadow: 4px 4px 0 #000;
-    z-index: 60;
+    bottom: 100px; left: 50%;
+    transform: translateX(-50%);
+    background: #000;
+    color: #FFD800;
+    padding: 10px 20px;
+    border: 3px solid #FFD800;
+    font-size: 12px;
+    z-index: 65;
     font-family: 'Press Start 2P', monospace;
+    min-width: 200px;
+    text-align: center;
+    display: none;
   }
 
   #micStatus {
     position: absolute;
-    bottom: 15px; left: 50%;
-    transform: translateX(-50%);
+    bottom: 15px; left: 15px;
     background: #000;
     color: white;
-    padding: 12px 25px;
-    font-size: 12px;
+    padding: 10px 15px;
+    font-size: 10px;
     display: flex; align-items: center; gap: 10px;
     border: 3px solid white;
     z-index: 60;
     font-family: 'Press Start 2P', monospace;
   }
-  .mic-dot {
-    width: 15px; height: 15px;
-    background: #00A850;
-    animation: pulse 1s infinite;
-  }
-  @keyframes pulse {
-    0%,100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(1.3); }
-  }
+  .mic-dot { width: 12px; height: 12px; background: #E52521; }
+  .mic-dot.active { background: #00A850; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-  #flashOverlay {
-    position: fixed; top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: red;
-    opacity: 0;
-    pointer-events: none;
-    z-index: 100;
-  }
+  #flashOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: red; opacity: 0; pointer-events: none; z-index: 100; }
   #flashOverlay.active { animation: flash 0.5s; }
-  @keyframes flash {
-    0%,100% { opacity: 0; }
-    50% { opacity: 0.4; }
-  }
+  @keyframes flash { 0%,100% { opacity: 0; } 50% { opacity: 0.4; } }
 
-  #finishScreen {
-    display: none;
-    position: fixed; top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.85);
-    z-index: 2000;
-    justify-content: center; align-items: center;
-    flex-direction: column;
-    color: white; text-align: center;
-  }
+  #finishScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; flex-direction: column; color: white; text-align: center; }
   #finishScreen h1 { font-size: 40px; margin-bottom: 20px; text-shadow: 4px 4px 0 #000; }
   #finishScreen .big-duck { font-size: 120px; animation: bounce 1s infinite; }
   #finishScreen p { font-size: 20px; margin-bottom: 30px; }
@@ -335,7 +237,7 @@
   <h1>PIXEL DUCK<br>READING</h1>
   <textarea id="textinput" placeholder="Введите текст...">Мама мыла раму. Папа читал газету. Катя играла с кошкой. На улице светило солнце.</textarea>
   <button class="pixel-btn" onclick="startLesson()">START</button>
-  <p>Откройте в Chrome или Edge.<br>Разрешите доступ к микрофону.</p>
+  <p>Откройте в Chrome или Edge.<br>Адрес сайта должен начинаться с HTTPS</p>
 </div>
 
 <div id="gameScreen">
@@ -368,9 +270,15 @@
 
   <div id="textArea"></div>
 
+  <!-- ЧТО УСЛЫШАЛ МИКРОФОН -->
+  <div id="heardText">🎤 ...</div>
+
+  <!-- КНОПКА ВКЛЮЧЕНИЯ МИКРОФОНА -->
+  <button id="micButton" onclick="toggleMic()">🎤 ВКЛЮЧИТЬ МИКРОФОН</button>
+
   <div id="micStatus">
-    <div class="mic-dot"></div>
-    <span>LISTENING...</span>
+    <div class="mic-dot" id="micDot"></div>
+    <span id="micText">МИКРОФОН ВЫКЛ</span>
   </div>
 
   <div id="flashOverlay"></div>
@@ -392,6 +300,7 @@ let isListening = false;
 let obstacleInterval = null;
 let isJumping = false;
 let isCrashing = false;
+let micStarted = false;
 
 function startLesson() {
   const text = document.getElementById('textinput').value.trim();
@@ -406,7 +315,6 @@ function startLesson() {
   document.getElementById('gameScreen').style.display = 'block';
 
   startObstacles();
-  startRecognition();
 }
 
 function renderWords() {
@@ -422,61 +330,134 @@ function renderWords() {
   if (current) current.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
+// КНОПКА ВКЛЮЧЕНИЯ МИКРОФОНА
+function toggleMic() {
+  if (!micStarted) {
+    startRecognition();
+  } else {
+    stopRecognition();
+  }
+}
+
 function startRecognition() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
-    alert('Браузер не поддерживает распознавание речи. Используйте Chrome или Edge.');
+    alert('❌ Браузер не поддерживает распознавание речи!\n\nОткройте страницу в Google Chrome или Microsoft Edge.');
     return;
   }
 
-  recognition = new SpeechRecognition();
-  recognition.lang = 'ru-RU';
-  recognition.continuous = true;
-  recognition.interimResults = true;
+  try {
+    recognition = new SpeechRecognition();
+    recognition.lang = 'ru-RU';
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
 
-  recognition.onresult = (event) => {
-    const lastIndex = event.results.length - 1;
-    const result = event.results[lastIndex];
-    const transcript = result[0].transcript.trim().toLowerCase();
+    recognition.onstart = () => {
+      console.log('✅ Микрофон включен');
+      isListening = true;
+      micStarted = true;
+      
+      const btn = document.getElementById('micButton');
+      btn.textContent = '🔴 ВЫКЛЮЧИТЬ МИКРОФОН';
+      btn.classList.add('active');
+      
+      document.getElementById('micDot').classList.add('active');
+      document.getElementById('micText').textContent = 'СЛУШАЮ...';
+      document.getElementById('heardText').style.display = 'block';
+    };
 
-    console.log("🎤 Услышано:", transcript);
+    recognition.onresult = (event) => {
+      // Берем САМЫЙ ПОСЛЕДНИЙ результат
+      const lastIndex = event.results.length - 1;
+      const result = event.results[lastIndex];
+      let transcript = result[0].transcript.trim();
+      
+      // Показываем что услышали
+      document.getElementById('heardText').textContent = '🎤 ' + transcript;
+      console.log('🎤 Услышано:', transcript, '| Final:', result.isFinal);
+      
+      // Обрабатываем ТОЛЬКО финальные результаты (полные слова)
+      if (result.isFinal) {
+        processSpeech(transcript);
+      }
+    };
 
-    if (result.isFinal) {
-      processSpeech(transcript);
-    }
-  };
+    recognition.onerror = (e) => {
+      console.error('❌ Ошибка микрофона:', e.error);
+      
+      if (e.error === 'not-allowed') {
+        alert('❌ Доступ к микрофону запрещён!\n\n1. Нажмите на значок 🔒 слева от адреса сайта\n2. Найдите "Микрофон"\n3. Выберите "Разрешить"\n4. Обновите страницу (F5)');
+        stopRecognition();
+      } else if (e.error === 'no-speech') {
+        console.log('Тишина...');
+      } else if (e.error === 'network') {
+        alert('❌ Ошибка сети. Проверьте интернет.');
+      } else {
+        console.log('Ошибка:', e.error);
+      }
+    };
 
-  recognition.onerror = (e) => {
-    console.error("Ошибка:", e.error);
-    if (e.error === 'not-allowed') {
-      alert('Разрешите доступ к микрофону!');
-    }
-  };
+    recognition.onend = () => {
+      console.log('🔄 Recognition ended');
+      // Автоматически перезапускаем, если мы всё ещё слушаем
+      if (isListening && micStarted) {
+        try { 
+          setTimeout(() => {
+            if (isListening && micStarted) recognition.start();
+          }, 100);
+        } catch(e) {
+          console.log('Не удалось перезапустить:', e);
+        }
+      }
+    };
 
-  recognition.onend = () => {
-    if (isListening) {
-      try { recognition.start(); } catch(e) {}
-    }
-  };
+    // ЗАПУСКАЕМ!
+    recognition.start();
+    console.log('🎤 Запуск распознавания...');
+    
+  } catch(e) {
+    console.error('Критическая ошибка:', e);
+    alert('❌ Не удалось запустить микрофон: ' + e.message);
+  }
+}
 
-  isListening = true;
-  try { recognition.start(); } catch(e) {}
+function stopRecognition() {
+  isListening = false;
+  micStarted = false;
+  if (recognition) {
+    try { recognition.stop(); } catch(e) {}
+    recognition = null;
+  }
+  
+  const btn = document.getElementById('micButton');
+  btn.textContent = '🎤 ВКЛЮЧИТЬ МИКРОФОН';
+  btn.classList.remove('active');
+  
+  document.getElementById('micDot').classList.remove('active');
+  document.getElementById('micText').textContent = 'МИКРОФОН ВЫКЛ';
+  document.getElementById('heardText').style.display = 'none';
 }
 
 function processSpeech(text) {
   if (currentWordIndex >= words.length || isCrashing) return;
 
-  const spokenWords = text.replace(/[.,!?;:"]/g, '').split(/\s+/).filter(w => w.length > 0);
+  // Очищаем от знаков препинания
+  const cleanText = text.toLowerCase().replace(/[.,!?;:"'()-]/g, '').trim();
+  const spokenWords = cleanText.split(/\s+/).filter(w => w.length > 0);
+  
   if (spokenWords.length === 0) return;
 
+  // Берём ПОСЛЕДНЕЕ сказанное слово
   const spoken = spokenWords[spokenWords.length - 1];
-  const expected = words[currentWordIndex].toLowerCase().replace(/[.,!?;:"]/g, '');
+  const expected = words[currentWordIndex].toLowerCase().replace(/[.,!?;:"'()-]/g, '');
 
-  console.log(`Сказано: "${spoken}", ожидалось: "${expected}"`);
+  console.log(`🧠 Сравнение: "${spoken}" vs "${expected}"`);
 
   if (spoken === expected) {
     onCorrect();
   } else if (spoken.length > 1) {
+    // Реагируем только если это полноценное слово
     onWrong();
   }
 }
@@ -492,7 +473,12 @@ function onCorrect() {
   duck.classList.remove('jumping');
   void duck.offsetWidth;
   duck.classList.add('jumping');
-  setTimeout(() => { duck.classList.remove('jumping'); isJumping = false; }, 700);
+  setTimeout(() => { 
+    duck.classList.remove('jumping'); 
+    isJumping = false;
+    // Останавливаем бег через 1 секунду после приземления
+    setTimeout(() => { duck.classList.remove('running'); }, 500);
+  }, 700);
 
   currentWordIndex++;
   renderWords();
@@ -540,7 +526,6 @@ function startObstacles() {
       obs.className = 'obstacle';
       const obstacles = ['🌵', '💩', '🚧'];
       obs.textContent = obstacles[Math.floor(Math.random() * obstacles.length)];
-      obs.style.fontSize = '70px';
       document.getElementById('gameContainer').appendChild(obs);
       setTimeout(() => obs.remove(), 4000);
     }
@@ -548,8 +533,7 @@ function startObstacles() {
 }
 
 function finishLesson() {
-  isListening = false;
-  if (recognition) recognition.stop();
+  stopRecognition();
   clearInterval(obstacleInterval);
 
   document.getElementById('finalScore').textContent = 'SCORE: ' + score;
