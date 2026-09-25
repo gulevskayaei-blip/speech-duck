@@ -3,9 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
 <title>🦆 Pixel Duck Reading</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
@@ -17,8 +14,6 @@
     height: 100vh;
     background: #5C94FC;
     image-rendering: pixelated;
-    image-rendering: -moz-crisp-edges;
-    image-rendering: crisp-edges;
   }
 
   #teacherScreen {
@@ -83,15 +78,18 @@
   .sky { position: absolute; top: 0; left: 0; width: 100%; height: 65%; background: #5C94FC; }
   .sun { position: absolute; top: 30px; right: 60px; width: 60px; height: 60px; background: #FFD800; border: 4px solid #000; }
 
-  .cloud { position: absolute; background: white; border: 3px solid #000; animation: cloudMove 25s linear infinite; }
-  .cloud1 { width: 80px; height: 30px; top: 50px; }
+  .cloud { position: absolute; background: white; border: 3px solid #000; }
+  .cloud1 { width: 80px; height: 30px; top: 50px; left: 20%; }
   .cloud1::before { content:''; position:absolute; width:40px; height:40px; background:white; border:3px solid #000; top:-25px; left:10px; }
   .cloud1::after { content:''; position:absolute; width:30px; height:30px; background:white; border:3px solid #000; top:-18px; right:10px; }
-  .cloud2 { width: 60px; height: 25px; top: 100px; animation: cloudMove 35s linear infinite; animation-delay: -10s; }
+  .cloud2 { width: 60px; height: 25px; top: 100px; left: 55%; }
   .cloud2::before { content:''; position:absolute; width:30px; height:30px; background:white; border:3px solid #000; top:-18px; left:8px; }
-  .cloud3 { width: 100px; height: 35px; top: 150px; animation: cloudMove 30s linear infinite; animation-delay: -20s; }
+  .cloud3 { width: 100px; height: 35px; top: 150px; left: 80%; }
   .cloud3::before { content:''; position:absolute; width:45px; height:45px; background:white; border:3px solid #000; top:-28px; left:15px; }
-  @keyframes cloudMove { from{left:110%;} to{left:-200px;} }
+
+  /* Облака двигаются ТОЛЬКО когда мир движется */
+  .cloud.moving { animation: cloudMove 8s linear infinite; }
+  @keyframes cloudMove { from{transform:translateX(0);} to{transform:translateX(-120vw);} }
 
   .hill { position: absolute; bottom: 35%; background: #00A850; border: 4px solid #000; border-radius: 100px 100px 0 0 / 80px 80px 0 0; }
   .hill1 { left: 10%; width: 200px; height: 100px; }
@@ -106,7 +104,14 @@
   }
 
   .road { position: absolute; bottom: 35%; left: 0; width: 100%; height: 60px; background: #E59400; border-top: 4px solid #000; border-bottom: 4px solid #000; }
-  .road-lines { position: absolute; top: 50%; left: 0; width: 200%; height: 8px; background: repeating-linear-gradient(90deg, #FFF 0 30px, transparent 30px 60px); transform: translateY(-50%); animation: roadMove 1s linear infinite; }
+  .road-lines {
+    position: absolute; top: 50%; left: 0;
+    width: 200%; height: 8px;
+    background: repeating-linear-gradient(90deg, #FFF 0 30px, transparent 30px 60px);
+    transform: translateY(-50%);
+    /* Анимация НЕ бесконечная — запускается только при движении */
+  }
+  .road-lines.moving { animation: roadMove 1s linear infinite; }
   @keyframes roadMove { from{transform:translateY(-50%) translateX(0);} to{transform:translateY(-50%) translateX(-60px);} }
 
   #gameContainer { position: absolute; bottom: calc(35% + 60px); left: 0; width: 100%; height: 200px; pointer-events: none; }
@@ -129,6 +134,7 @@
     100% { transform: translateY(0) rotate(360deg); }
   }
 
+  /* Лапки и крыло двигаются ТОЛЬКО с классом running */
   #duck.running .leg-left { animation: legRunLeft 0.3s linear infinite; transform-origin: top center; }
   #duck.running .leg-right { animation: legRunRight 0.3s linear infinite; transform-origin: top center; }
   #duck.running .wing { animation: wingFlap 0.4s ease-in-out infinite; transform-origin: center; }
@@ -139,10 +145,12 @@
   .eye-lid { animation: blink 3s infinite; transform-origin: center; }
   @keyframes blink { 0%,95%,100%{transform:scaleY(0);} 97%{transform:scaleY(1);} }
 
-  .obstacle { position: absolute; bottom: 0; font-size: 70px; animation: obstacleMove 4s linear forwards; z-index: 15; }
+  .obstacle { position: absolute; bottom: 0; font-size: 70px; z-index: 15; }
+  .obstacle.moving { animation: obstacleMove 3s linear forwards; }
   @keyframes obstacleMove { from { left: 110%; } to { left: -100px; } }
 
-  .pit { position: absolute; bottom: -10px; width: 100px; height: 30px; background: #000; border: 3px solid #333; animation: pitMove 4s linear forwards; z-index: 15; }
+  .pit { position: absolute; bottom: -10px; width: 100px; height: 30px; background: #000; border: 3px solid #333; z-index: 15; }
+  .pit.moving { animation: pitMove 3s linear forwards; }
   @keyframes pitMove { from { left: 110%; } to { left: -150px; } }
 
   #textArea {
@@ -150,7 +158,7 @@
     width: 92%; max-width: 900px; background: rgba(255,255,255,0.97);
     padding: 25px; border: 4px solid #000; box-shadow: 8px 8px 0 #000;
     font-size: 22px; line-height: 1.8; text-align: center;
-    max-height: 35vh; overflow-y: auto; z-index: 50;
+    max-height: 30vh; overflow-y: auto; z-index: 50;
     font-family: 'Press Start 2P', monospace;
   }
   .word { display: inline-block; margin: 0 3px; padding: 3px 7px; transition: all 0.3s; }
@@ -161,48 +169,33 @@
 
   #score { position: absolute; top: 20px; right: 20px; background: #FFD800; padding: 12px 25px; font-size: 18px; font-weight: bold; border: 4px solid #000; box-shadow: 4px 4px 0 #000; z-index: 60; font-family: 'Press Start 2P', monospace; }
 
-  /* Кнопка включения микрофона */
-  #micButton {
+  /* КНОПКИ УПРАВЛЕНИЯ */
+  #controlButtons {
     position: absolute;
-    bottom: 20px; left: 50%;
+    bottom: 20px;
+    left: 50%;
     transform: translateX(-50%);
+    display: flex;
+    gap: 20px;
+    z-index: 70;
+  }
+  
+  .control-btn {
     padding: 20px 40px;
     font-size: 14px;
-    background: #E52521;
-    color: white;
     border: 4px solid #000;
     cursor: pointer;
     font-family: 'Press Start 2P', monospace;
     box-shadow: 0 6px 0 #000;
-    z-index: 70;
+    transition: all 0.1s;
     text-transform: uppercase;
-    animation: pulseBtn 1.5s infinite;
+    color: white;
   }
-  @keyframes pulseBtn {
-    0%,100% { transform: translateX(-50%) scale(1); }
-    50% { transform: translateX(-50%) scale(1.05); }
-  }
-  #micButton.active {
-    background: #00A850;
-    animation: none;
-  }
-
-  /* Что услышал микрофон */
-  #heardText {
-    position: absolute;
-    bottom: 100px; left: 50%;
-    transform: translateX(-50%);
-    background: #000;
-    color: #FFD800;
-    padding: 10px 20px;
-    border: 3px solid #FFD800;
-    font-size: 12px;
-    z-index: 65;
-    font-family: 'Press Start 2P', monospace;
-    min-width: 200px;
-    text-align: center;
-    display: none;
-  }
+  .control-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #000; }
+  .control-btn.correct { background: #00A850; }
+  .control-btn.correct:hover { background: #00C853; }
+  .control-btn.wrong { background: #E52521; }
+  .control-btn.wrong:hover { background: #FF3B30; }
 
   #micStatus {
     position: absolute;
@@ -237,19 +230,19 @@
   <h1>PIXEL DUCK<br>READING</h1>
   <textarea id="textinput" placeholder="Введите текст...">Мама мыла раму. Папа читал газету. Катя играла с кошкой. На улице светило солнце.</textarea>
   <button class="pixel-btn" onclick="startLesson()">START</button>
-  <p>Откройте в Chrome или Edge.<br>Адрес сайта должен начинаться с HTTPS</p>
+  <p>Учитель слушает ученика и нажимает:<br>✓ если прочитал правильно<br>✗ если ошибся</p>
 </div>
 
 <div id="gameScreen">
   <div class="sky"></div>
   <div class="sun"></div>
-  <div class="cloud cloud1"></div>
-  <div class="cloud cloud2"></div>
-  <div class="cloud cloud3"></div>
+  <div class="cloud cloud1" id="cloud1"></div>
+  <div class="cloud cloud2" id="cloud2"></div>
+  <div class="cloud cloud3" id="cloud3"></div>
   <div class="hill hill1"></div>
   <div class="hill hill2"></div>
   <div class="ground"></div>
-  <div class="road"><div class="road-lines"></div></div>
+  <div class="road"><div class="road-lines" id="roadLines"></div></div>
 
   <div id="score">SCORE: 0</div>
 
@@ -270,15 +263,14 @@
 
   <div id="textArea"></div>
 
-  <!-- ЧТО УСЛЫШАЛ МИКРОФОН -->
-  <div id="heardText">🎤 ...</div>
-
-  <!-- КНОПКА ВКЛЮЧЕНИЯ МИКРОФОНА -->
-  <button id="micButton" onclick="toggleMic()">🎤 ВКЛЮЧИТЬ МИКРОФОН</button>
+  <div id="controlButtons">
+    <button class="control-btn correct" onclick="onCorrect()">✓ ВЕРНО</button>
+    <button class="control-btn wrong" onclick="onWrong()">✗ ОШИБКА</button>
+  </div>
 
   <div id="micStatus">
     <div class="mic-dot" id="micDot"></div>
-    <span id="micText">МИКРОФОН ВЫКЛ</span>
+    <span id="micText">РУЧНОЙ РЕЖИМ</span>
   </div>
 
   <div id="flashOverlay"></div>
@@ -295,12 +287,9 @@
 let words = [];
 let currentWordIndex = 0;
 let score = 0;
-let recognition = null;
-let isListening = false;
-let obstacleInterval = null;
 let isJumping = false;
 let isCrashing = false;
-let micStarted = false;
+let isMoving = false;
 
 function startLesson() {
   const text = document.getElementById('textinput').value.trim();
@@ -314,7 +303,8 @@ function startLesson() {
   document.getElementById('teacherScreen').style.display = 'none';
   document.getElementById('gameScreen').style.display = 'block';
 
-  startObstacles();
+  // Пытаемся запустить микрофон (необязательно)
+  tryStartMic();
 }
 
 function renderWords() {
@@ -330,179 +320,146 @@ function renderWords() {
   if (current) current.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-// КНОПКА ВКЛЮЧЕНИЯ МИКРОФОНА
-function toggleMic() {
-  if (!micStarted) {
-    startRecognition();
-  } else {
-    stopRecognition();
-  }
-}
-
-function startRecognition() {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    alert('❌ Браузер не поддерживает распознавание речи!\n\nОткройте страницу в Google Chrome или Microsoft Edge.');
-    return;
-  }
+// === МИКРОФОН (бонус, если работает) ===
+function tryStartMic() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return;
 
   try {
-    recognition = new SpeechRecognition();
-    recognition.lang = 'ru-RU';
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.maxAlternatives = 1;
+    const rec = new SR();
+    rec.lang = 'ru-RU';
+    rec.continuous = true;
+    rec.interimResults = true;
 
-    recognition.onstart = () => {
-      console.log('✅ Микрофон включен');
-      isListening = true;
-      micStarted = true;
-      
-      const btn = document.getElementById('micButton');
-      btn.textContent = '🔴 ВЫКЛЮЧИТЬ МИКРОФОН';
-      btn.classList.add('active');
-      
+    rec.onstart = () => {
       document.getElementById('micDot').classList.add('active');
       document.getElementById('micText').textContent = 'СЛУШАЮ...';
-      document.getElementById('heardText').style.display = 'block';
     };
 
-    recognition.onresult = (event) => {
-      // Берем САМЫЙ ПОСЛЕДНИЙ результат
-      const lastIndex = event.results.length - 1;
-      const result = event.results[lastIndex];
-      let transcript = result[0].transcript.trim();
-      
-      // Показываем что услышали
-      document.getElementById('heardText').textContent = '🎤 ' + transcript;
-      console.log('🎤 Услышано:', transcript, '| Final:', result.isFinal);
-      
-      // Обрабатываем ТОЛЬКО финальные результаты (полные слова)
-      if (result.isFinal) {
-        processSpeech(transcript);
-      }
-    };
-
-    recognition.onerror = (e) => {
-      console.error('❌ Ошибка микрофона:', e.error);
-      
-      if (e.error === 'not-allowed') {
-        alert('❌ Доступ к микрофону запрещён!\n\n1. Нажмите на значок 🔒 слева от адреса сайта\n2. Найдите "Микрофон"\n3. Выберите "Разрешить"\n4. Обновите страницу (F5)');
-        stopRecognition();
-      } else if (e.error === 'no-speech') {
-        console.log('Тишина...');
-      } else if (e.error === 'network') {
-        alert('❌ Ошибка сети. Проверьте интернет.');
-      } else {
-        console.log('Ошибка:', e.error);
-      }
-    };
-
-    recognition.onend = () => {
-      console.log('🔄 Recognition ended');
-      // Автоматически перезапускаем, если мы всё ещё слушаем
-      if (isListening && micStarted) {
-        try { 
-          setTimeout(() => {
-            if (isListening && micStarted) recognition.start();
-          }, 100);
-        } catch(e) {
-          console.log('Не удалось перезапустить:', e);
+    rec.onresult = (event) => {
+      const last = event.results[event.results.length - 1];
+      if (last.isFinal) {
+        const spoken = last[0].transcript.trim().toLowerCase().replace(/[.,!?;:"'()-]/g, '').split(/\s+/).filter(w => w.length > 1);
+        if (spoken.length > 0) {
+          const expected = words[currentWordIndex].toLowerCase().replace(/[.,!?;:"'()-]/g, '');
+          if (spoken[spoken.length - 1] === expected) {
+            onCorrect();
+          } else {
+            onWrong();
+          }
         }
       }
     };
 
-    // ЗАПУСКАЕМ!
-    recognition.start();
-    console.log('🎤 Запуск распознавания...');
-    
-  } catch(e) {
-    console.error('Критическая ошибка:', e);
-    alert('❌ Не удалось запустить микрофон: ' + e.message);
+    rec.onerror = () => {};
+    rec.onend = () => { try { rec.start(); } catch(e) {} };
+    rec.start();
+  } catch(e) {}
+}
+
+// === ЗАПУСК ДВИЖЕНИЯ МИРА ===
+function startWorldMovement() {
+  if (isMoving) return;
+  isMoving = true;
+
+  document.getElementById('roadLines').classList.add('moving');
+  document.getElementById('cloud1').classList.add('moving');
+  document.getElementById('cloud2').classList.add('moving');
+  document.getElementById('cloud3').classList.add('moving');
+
+  // Создаём препятствие
+  spawnObstacle();
+}
+
+function stopWorldMovement() {
+  isMoving = false;
+  document.getElementById('roadLines').classList.remove('moving');
+  document.getElementById('cloud1').classList.remove('moving');
+  document.getElementById('cloud2').classList.remove('moving');
+  document.getElementById('cloud3').classList.remove('moving');
+}
+
+function spawnObstacle() {
+  const container = document.getElementById('gameContainer');
+  const rand = Math.random();
+
+  if (rand < 0.25) {
+    const pit = document.createElement('div');
+    pit.className = 'pit moving';
+    container.appendChild(pit);
+    setTimeout(() => pit.remove(), 3000);
+  } else {
+    const obs = document.createElement('div');
+    obs.className = 'obstacle moving';
+    const obstacles = ['🌵', '💩', '🚧'];
+    obs.textContent = obstacles[Math.floor(Math.random() * obstacles.length)];
+    container.appendChild(obs);
+    setTimeout(() => obs.remove(), 3000);
   }
 }
 
-function stopRecognition() {
-  isListening = false;
-  micStarted = false;
-  if (recognition) {
-    try { recognition.stop(); } catch(e) {}
-    recognition = null;
-  }
-  
-  const btn = document.getElementById('micButton');
-  btn.textContent = '🎤 ВКЛЮЧИТЬ МИКРОФОН';
-  btn.classList.remove('active');
-  
-  document.getElementById('micDot').classList.remove('active');
-  document.getElementById('micText').textContent = 'МИКРОФОН ВЫКЛ';
-  document.getElementById('heardText').style.display = 'none';
-}
-
-function processSpeech(text) {
-  if (currentWordIndex >= words.length || isCrashing) return;
-
-  // Очищаем от знаков препинания
-  const cleanText = text.toLowerCase().replace(/[.,!?;:"'()-]/g, '').trim();
-  const spokenWords = cleanText.split(/\s+/).filter(w => w.length > 0);
-  
-  if (spokenWords.length === 0) return;
-
-  // Берём ПОСЛЕДНЕЕ сказанное слово
-  const spoken = spokenWords[spokenWords.length - 1];
-  const expected = words[currentWordIndex].toLowerCase().replace(/[.,!?;:"'()-]/g, '');
-
-  console.log(`🧠 Сравнение: "${spoken}" vs "${expected}"`);
-
-  if (spoken === expected) {
-    onCorrect();
-  } else if (spoken.length > 1) {
-    // Реагируем только если это полноценное слово
-    onWrong();
-  }
-}
-
+// === ПРАВИЛЬНЫЙ ОТВЕТ ===
 function onCorrect() {
-  if (isJumping) return;
+  if (isJumping || isCrashing) return;
+  if (currentWordIndex >= words.length) return;
+
   score += 10;
   document.getElementById('score').textContent = 'SCORE: ' + score;
 
   const duck = document.getElementById('duck');
   isJumping = true;
+
+  // Запускаем движение мира
+  startWorldMovement();
+
+  // Уточка бежит и прыгает
   duck.classList.add('running');
   duck.classList.remove('jumping');
   void duck.offsetWidth;
   duck.classList.add('jumping');
-  setTimeout(() => { 
-    duck.classList.remove('jumping'); 
+
+  setTimeout(() => {
+    duck.classList.remove('jumping');
     isJumping = false;
-    // Останавливаем бег через 1 секунду после приземления
-    setTimeout(() => { duck.classList.remove('running'); }, 500);
+
+    // Останавливаем мир через 0.5 сек после приземления
+    setTimeout(() => {
+      duck.classList.remove('running');
+      stopWorldMovement();
+    }, 500);
   }, 700);
 
   currentWordIndex++;
   renderWords();
 
-  if (currentWordIndex >= words.length) finishLesson();
+  if (currentWordIndex >= words.length) {
+    setTimeout(finishLesson, 1500);
+  }
 }
 
+// === ОШИБКА ===
 function onWrong() {
-  if (isCrashing) return;
+  if (isCrashing || isJumping) return;
+  if (currentWordIndex >= words.length) return;
   isCrashing = true;
 
+  // Мигание экрана
   const flash = document.getElementById('flashOverlay');
   flash.classList.remove('active');
   void flash.offsetWidth;
   flash.classList.add('active');
 
+  // Слово красное
   const current = document.querySelector('.word.current');
   if (current) {
     current.classList.add('wrong');
     setTimeout(() => current.classList.remove('wrong'), 600);
   }
 
+  // Уточка спотыкается и падает
   const duck = document.getElementById('duck');
   duck.classList.remove('running');
+  stopWorldMovement();
   duck.classList.remove('crash');
   void duck.offsetWidth;
   duck.classList.add('crash');
@@ -513,29 +470,9 @@ function onWrong() {
   }, 1200);
 }
 
-function startObstacles() {
-  obstacleInterval = setInterval(() => {
-    const rand = Math.random();
-    if (rand < 0.25) {
-      const pit = document.createElement('div');
-      pit.className = 'pit';
-      document.getElementById('gameContainer').appendChild(pit);
-      setTimeout(() => pit.remove(), 4000);
-    } else {
-      const obs = document.createElement('div');
-      obs.className = 'obstacle';
-      const obstacles = ['🌵', '💩', '🚧'];
-      obs.textContent = obstacles[Math.floor(Math.random() * obstacles.length)];
-      document.getElementById('gameContainer').appendChild(obs);
-      setTimeout(() => obs.remove(), 4000);
-    }
-  }, 2500);
-}
-
+// === КОНЕЦ ===
 function finishLesson() {
-  stopRecognition();
-  clearInterval(obstacleInterval);
-
+  stopWorldMovement();
   document.getElementById('finalScore').textContent = 'SCORE: ' + score;
   document.getElementById('finishScreen').style.display = 'flex';
 }
