@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Чтение с уточкой 🦆</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -22,7 +23,7 @@
     padding: 20px;
     background: linear-gradient(to bottom, #87CEEB 0%, #FFB6C1 100%);
   }
-  #teacherScreen h1 { color: #fff; text-shadow: 3px 3px 0 #FF6B6B; margin-bottom: 20px; font-size: 48px; }
+  #teacherScreen h1 { color: #fff; text-shadow: 3px 3px 0 #FF6B6B; margin-bottom: 20px; font-size: 48px; text-align: center; }
   #teacherScreen .duck-preview { font-size: 100px; animation: bounce 1s infinite; }
   @keyframes bounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-20px);} }
   #teacherScreen textarea {
@@ -40,7 +41,7 @@
   }
   #teacherScreen button:hover { transform: translateY(-2px); box-shadow: 0 8px 0 #C94444; }
   #teacherScreen button:active { transform: translateY(4px); box-shadow: 0 2px 0 #C94444; }
-  #teacherScreen p { color: white; margin-top: 20px; font-size: 16px; background: rgba(0,0,0,0.3); padding: 10px 20px; border-radius: 20px; }
+  #teacherScreen p { color: white; margin-top: 20px; font-size: 16px; background: rgba(0,0,0,0.3); padding: 10px 20px; border-radius: 20px; text-align: center; max-width: 600px;}
 
   /* Игровой экран */
   #gameScreen { display: none; position: relative; height: 100vh; overflow: hidden; }
@@ -135,7 +136,7 @@
     width: 120px;
     height: 120px;
     transition: transform 0.1s;
-    z-index: 10;
+    z-index: 10; /* Уточка на заднем плане относительно препятствий */
   }
   #duck.jumping { animation: jump 0.7s ease-out; }
   #duck.crash { animation: crash 1.2s ease-in; }
@@ -180,13 +181,13 @@
     97% { transform: scaleY(1); }
   }
 
-  /* Препятствия */
+  /* Препятствия (ИСПРАВЛЕНО: теперь они ПЕРЕД уткой) */
   .obstacle {
     position: absolute;
     bottom: 0;
     font-size: 60px;
     animation: obstacleMove 4s linear forwards;
-    z-index: 5;
+    z-index: 15; /* Было 5, стало 15 */
   }
   @keyframes obstacleMove {
     from { left: 110%; }
@@ -202,7 +203,7 @@
     background: radial-gradient(ellipse at center, #000 0%, #333 70%, transparent 100%);
     border-radius: 50%;
     animation: pitMove 4s linear forwards;
-    z-index: 3;
+    z-index: 15; /* Было 3, стало 15 */
   }
   @keyframes pitMove {
     from { left: 110%; }
@@ -237,6 +238,7 @@
     border: 3px solid #F44336;
     animation: bubblePop 1.5s ease-out forwards;
     z-index: 30;
+    white-space: nowrap;
   }
   .oops-bubble::after {
     content: ''; position: absolute; bottom: -10px; left: 50%;
@@ -326,7 +328,7 @@
   }
   .mic-dot {
     width: 15px; height: 15px;
-    background: #F44336;
+    background: #4CAF50; /* Зеленый, когда работает */
     border-radius: 50%;
     animation: pulse 1s infinite;
   }
@@ -381,7 +383,7 @@
   <h1>Чтение с уточкой</h1>
   <textarea id="textinput" placeholder="Введите любой текст для чтения...">Мама мыла раму. Папа читал газету. Катя играла с кошкой. На улице светило солнце. Птицы пели песни.</textarea>
   <button onclick="startLesson()">🎤 Начать урок</button>
-  <p>⚠️ Работает в Chrome, Edge, Яндекс.Браузере. Разрешите доступ к микрофону.</p>
+  <p>⚠️ Работает в Chrome или Edge. <br>Для работы микрофона адрес сайта должен начинаться с <b>https://</b></p>
 </div>
 
 <!-- Игровой экран -->
@@ -400,36 +402,25 @@
   <div id="gameContainer">
     <!-- SVG уточка -->
     <svg id="duck" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-      <!-- Тело -->
       <ellipse cx="55" cy="70" rx="38" ry="28" fill="#FFEB3B" stroke="#F9A825" stroke-width="2"/>
-      <!-- Крыло -->
       <ellipse class="wing" cx="55" cy="65" rx="22" ry="15" fill="#FDD835" stroke="#F9A825" stroke-width="2"/>
-      <!-- Голова -->
       <circle cx="85" cy="40" r="22" fill="#FFEB3B" stroke="#F9A825" stroke-width="2"/>
-      <!-- Хохолок -->
       <path d="M 80 20 Q 85 10 90 18 Q 92 12 95 20" fill="#FDD835" stroke="#F9A825" stroke-width="1.5"/>
-      <!-- Клюв -->
       <path d="M 100 38 L 118 42 L 100 46 Z" fill="#FF9800" stroke="#E65100" stroke-width="1.5"/>
       <line x1="100" y1="42" x2="115" y2="42" stroke="#E65100" stroke-width="1"/>
-      <!-- Глаз -->
       <circle cx="92" cy="35" r="5" fill="white"/>
       <circle cx="93" cy="35" r="3" fill="black"/>
       <circle cx="94" cy="34" r="1" fill="white"/>
-      <!-- Веко для моргания -->
       <ellipse class="eye-lid" cx="92" cy="35" rx="5" ry="5" fill="#FFEB3B"/>
-      <!-- Щёчка -->
       <circle cx="88" cy="48" r="3" fill="#FFAB91" opacity="0.6"/>
-      <!-- Левая лапка -->
       <g class="leg-left">
         <rect x="45" y="95" width="4" height="15" fill="#FF9800"/>
         <path d="M 40 110 L 52 110 L 50 115 L 42 115 Z" fill="#FF9800" stroke="#E65100" stroke-width="1"/>
       </g>
-      <!-- Правая лапка -->
       <g class="leg-right">
         <rect x="65" y="95" width="4" height="15" fill="#FF9800"/>
         <path d="M 60 110 L 72 110 L 70 115 L 62 115 Z" fill="#FF9800" stroke="#E65100" stroke-width="1"/>
       </g>
-      <!-- Хвостик -->
       <path d="M 20 65 Q 10 60 15 70 Q 8 72 18 75 Z" fill="#FDD835" stroke="#F9A825" stroke-width="1.5"/>
     </svg>
   </div>
@@ -496,7 +487,7 @@ function renderWords() {
 function startRecognition() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
-    alert('Ваш браузер не поддерживает распознавание речи. Используйте Chrome или Edge.');
+    alert('Ваш браузер не поддерживает распознавание речи. Пожалуйста, откройте эту страницу в Google Chrome или Microsoft Edge.');
     return;
   }
 
@@ -506,38 +497,57 @@ function startRecognition() {
   recognition.interimResults = true;
 
   recognition.onresult = (event) => {
-    let finalTranscript = '';
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript;
+    // Берем самый последний результат от браузера
+    const lastIndex = event.results.length - 1;
+    const result = event.results[lastIndex];
+    const transcript = result[0].transcript.trim().toLowerCase();
+
+    // Логируем для отладки (нажмите F12, чтобы увидеть это в консоли)
+    console.log("🎤 Браузер услышал:", transcript, "| Финально:", result.isFinal);
+
+    if (result.isFinal) {
+      processSpeech(transcript);
     }
-    if (finalTranscript) processSpeech(finalTranscript.trim());
   };
 
   recognition.onerror = (e) => {
-    if (e.error === 'not-allowed') alert('Разрешите доступ к микрофону!');
+    console.error("❌ Ошибка микрофона:", e.error);
+    if (e.error === 'not-allowed') {
+      alert('Пожалуйста, разрешите доступ к микрофону! Нажмите на значок замка 🔒 слева от адресной строки.');
+    }
   };
 
   recognition.onend = () => {
-    if (isListening) recognition.start();
+    console.log("🔄 Перезапуск микрофона...");
+    if (isListening) {
+      try { recognition.start(); } catch(e) {}
+    }
   };
 
   isListening = true;
-  recognition.start();
+  try { recognition.start(); } catch(e) {}
 }
 
 function processSpeech(text) {
   if (currentWordIndex >= words.length || isCrashing) return;
 
-  const spokenWords = text.toLowerCase().replace(/[.,!?;:]/g, '').split(/\s+/).filter(w => w);
+  // Очищаем сказанное от знаков препинания и разбиваем на слова
+  const spokenWords = text.replace(/[.,!?;:"]/g, '').split(/\s+/).filter(w => w.length > 0);
   if (spokenWords.length === 0) return;
 
-  const spoken = spokenWords[0];
-  const expected = words[currentWordIndex].toLowerCase().replace(/[.,!?;:]/g, '');
+  // Проверяем ПОСЛЕДНЕЕ сказанное слово (это надежнее, чем первое, так как дети часто начинают со звуков "э-э")
+  const spoken = spokenWords[spokenWords.length - 1];
+  const expected = words[currentWordIndex].toLowerCase().replace(/[.,!?;:"]/g, '');
+
+  console.log(`🧠 Сравнение: сказано "${spoken}", ожидалось "${expected}"`);
 
   if (spoken === expected) {
     onCorrect();
   } else {
-    onWrong();
+    // Реагируем на ошибку только если было сказано полноценное слово (длиннее 1 буквы), чтобы игнорировать случайные звуки
+    if (spoken.length > 1) {
+      onWrong();
+    }
   }
 }
 
@@ -549,7 +559,7 @@ function onCorrect() {
   const duck = document.getElementById('duck');
   isJumping = true;
   duck.classList.remove('jumping');
-  void duck.offsetWidth;
+  void duck.offsetWidth; // Хак для перезапуска CSS-анимации
   duck.classList.add('jumping');
   setTimeout(() => { duck.classList.remove('jumping'); isJumping = false; }, 700);
 
@@ -563,29 +573,24 @@ function onWrong() {
   if (isCrashing) return;
   isCrashing = true;
 
-  // Мигание экрана
   const flash = document.getElementById('flashOverlay');
   flash.classList.remove('active');
   void flash.offsetWidth;
   flash.classList.add('active');
 
-  // Слово красное
   const current = document.querySelector('.word.current');
   if (current) {
     current.classList.add('wrong');
     setTimeout(() => current.classList.remove('wrong'), 600);
   }
 
-  // Уточка падает
   const duck = document.getElementById('duck');
   duck.classList.remove('crash');
   void duck.offsetWidth;
   duck.classList.add('crash');
 
-  // Звёздочки над головой
   spawnStars();
 
-  // Облачко "Ой!"
   const bubble = document.createElement('div');
   bubble.className = 'oops-bubble';
   const oops = ['Ой!', 'Бабах!', 'Бдыщ!', 'Ох!', 'Упс!'];
@@ -623,13 +628,11 @@ function spawnStars() {
 function startObstacles() {
   obstacleInterval = setInterval(() => {
     if (Math.random() < 0.3) {
-      // Яма
       const pit = document.createElement('div');
       pit.className = 'pit';
       document.getElementById('gameContainer').appendChild(pit);
       setTimeout(() => pit.remove(), 4000);
     } else {
-      // Препятствие
       const obs = document.createElement('div');
       obs.className = 'obstacle';
       const obstacles = ['🌵', '🪨', '🌲', '🍄', '🪵', '🌻'];
