@@ -3,11 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🦆 Pixel Duck Voice Reading</title>
+<title>🦆 English Voice Reading Runner</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  
   body {
     font-family: 'Press Start 2P', monospace;
     overflow: hidden;
@@ -27,11 +26,11 @@
   }
   #teacherScreen h1 {
     color: white;
-    font-size: 28px;
+    font-size: 24px;
     margin-bottom: 30px;
     text-shadow: 4px 4px 0 #000;
     text-align: center;
-    line-height: 1.5;
+    line-height: 1.6;
   }
   #teacherScreen .pixel-duck {
     font-size: 100px;
@@ -42,11 +41,12 @@
   
   #teacherScreen textarea {
     width: 90%; max-width: 700px; height: 150px;
-    padding: 15px; font-size: 14px;
+    padding: 15px; font-size: 16px;
     border: 4px solid #000;
     background: white;
     font-family: 'Press Start 2P', monospace;
     resize: none;
+    text-transform: lowercase; /* Для удобства */
   }
 
   .pixel-btn {
@@ -152,9 +152,10 @@
     position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
     width: 92%; max-width: 900px; background: rgba(255,255,255,0.97);
     padding: 25px; border: 4px solid #000; box-shadow: 8px 8px 0 #000;
-    font-size: 22px; line-height: 1.8; text-align: center;
+    font-size: 24px; line-height: 1.8; text-align: center;
     max-height: 25vh; overflow-y: auto; z-index: 50;
     font-family: 'Press Start 2P', monospace;
+    color: #333;
   }
   .word { display: inline-block; margin: 0 3px; padding: 3px 7px; transition: all 0.3s; }
   .word.current { background: #FFD800; color: #000; transform: scale(1.2); border: 3px solid #000; font-weight: bold; }
@@ -164,7 +165,6 @@
 
   #score { position: absolute; top: 20px; right: 20px; background: #FFD800; padding: 12px 25px; font-size: 18px; font-weight: bold; border: 4px solid #000; box-shadow: 4px 4px 0 #000; z-index: 60; font-family: 'Press Start 2P', monospace; }
 
-  /* Панель того, что слышит компьютер */
   #voiceDebug {
     position: absolute;
     bottom: 100px;
@@ -182,6 +182,7 @@
     display: none;
   }
   #voiceDebug span { color: #FFD800; }
+  #voiceDebug .warning { color: #FF3B30; font-size: 10px; margin-top: 5px; }
 
   #micStatus {
     position: absolute;
@@ -197,6 +198,7 @@
   }
   .mic-dot { width: 12px; height: 12px; background: #E52521; }
   .mic-dot.active { background: #00A850; animation: pulse 1s infinite; }
+  .mic-dot.error { background: #FF3B30; }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
 
   #flashOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: red; opacity: 0; pointer-events: none; z-index: 100; }
@@ -213,10 +215,10 @@
 
 <div id="teacherScreen">
   <div class="pixel-duck">🦆</div>
-  <h1>PIXEL DUCK<br>VOICE READING</h1>
-  <textarea id="textinput" placeholder="Введите текст для чтения...">Мама мыла раму. Папа читал газету.</textarea>
-  <button class="pixel-btn" onclick="startLesson()">🎤 НАЧАТЬ И СЛУШАТЬ</button>
-  <p>⚠️ ВАЖНО:<br>1. Используйте Google Chrome<br>2. Разрешите доступ к микрофону<br>3. Говорите четко и громко</p>
+  <h1>ENGLISH VOICE<br>READING RUNNER</h1>
+  <textarea id="textinput" placeholder="Enter English text here...">The quick brown fox jumps over the lazy dog</textarea>
+  <button class="pixel-btn" onclick="startLesson()">🎤 START LESSON</button>
+  <p>⌨️ Аварийное управление (если микрофон заблокирован):<br><b>[ПРОБЕЛ]</b> = Прочитал верно<br><b>[BACKSPACE]</b> = Ошибка</p>
 </div>
 
 <div id="gameScreen">
@@ -249,15 +251,15 @@
 
   <div id="textArea"></div>
 
-  <!-- Панель отладки голоса -->
   <div id="voiceDebug">
-    СЛЫШУ: <span id="heardText">...</span><br>
-    <small style="color:#aaa; font-size:8px;">ЖДУ СЛОВО: "<span id="expectedText">...</span>"</small>
+    HEARD: <span id="heardText">...</span><br>
+    <small style="color:#aaa; font-size:8px;">EXPECTING: "<span id="expectedText">...</span>"</small>
+    <div id="micWarning" class="warning" style="display:none;">⚠️ NETWORK BLOCKED. USE KEYBOARD!</div>
   </div>
 
   <div id="micStatus">
     <div class="mic-dot" id="micDot"></div>
-    <span id="micText">МИКРОФОН ВЫКЛ</span>
+    <span id="micText">MIC OFF</span>
   </div>
 
   <div id="flashOverlay"></div>
@@ -265,9 +267,9 @@
 
 <div id="finishScreen">
   <div class="big-duck">🦆</div>
-  <h1>УРОК ОКОНЧЕН!</h1>
+  <h1>LESSON COMPLETE!</h1>
   <p id="finalScore">SCORE: 0</p>
-  <button class="pixel-btn" onclick="location.reload()">ЗАНОВО</button>
+  <button class="pixel-btn" onclick="location.reload()">RESTART</button>
 </div>
 
 <script>
@@ -279,15 +281,17 @@ let isCrashing = false;
 let isMoving = false;
 let gameActive = false;
 let recognition = null;
+let networkErrorCount = 0;
 
 function startLesson() {
   const text = document.getElementById('textinput').value.trim();
-  if (!text) { alert('Введите текст!'); return; }
+  if (!text) { alert('Please enter text!'); return; }
 
   words = text.split(/\s+/).filter(w => w.length > 0);
   currentWordIndex = 0;
   score = 0;
   gameActive = true;
+  networkErrorCount = 0;
 
   renderWords();
   document.getElementById('teacherScreen').style.display = 'none';
@@ -295,6 +299,7 @@ function startLesson() {
   document.getElementById('voiceDebug').style.display = 'block';
 
   initVoiceRecognition();
+  setupKeyboardControls();
 }
 
 function renderWords() {
@@ -309,113 +314,122 @@ function renderWords() {
   const current = area.querySelector('.word.current');
   if (current) current.scrollIntoView({ behavior: 'smooth', block: 'center' });
   
-  // Обновляем подсказку на экране
   if (currentWordIndex < words.length) {
-    document.getElementById('expectedText').textContent = words[currentWordIndex].replace(/[.,!?;:"'()-]/g, '');
+    document.getElementById('expectedText').textContent = words[currentWordIndex].replace(/[^a-z0-9]/gi, '');
   }
 }
 
-// === НАДЕЖНОЕ РАСПОЗНАВАНИЕ ГОЛОСА (как в репозиториях voice-control) ===
 function initVoiceRecognition() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
-    alert('Ваш браузер не поддерживает голосовое управление. Используйте Google Chrome.');
+    showMicError();
     return;
   }
 
   recognition = new SpeechRecognition();
-  recognition.lang = 'ru-RU';
-  recognition.continuous = true; // Слушать постоянно
-  recognition.interimResults = true; // Показывать промежуточные результаты (помогает держать соединение)
+  recognition.lang = 'en-US'; // КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: Английский язык
+  recognition.continuous = true;
+  recognition.interimResults = true;
 
   recognition.onstart = () => {
-    console.log('✅ Микрофон активен');
+    console.log('✅ Microphone active (EN)');
     document.getElementById('micDot').classList.add('active');
-    document.getElementById('micText').textContent = 'СЛУШАЮ...';
+    document.getElementById('micDot').classList.remove('error');
+    document.getElementById('micText').textContent = 'LISTENING...';
   };
 
   recognition.onresult = (event) => {
     let finalTranscript = '';
-    let interimTranscript = '';
-
     for (let i = event.resultIndex; i < event.results.length; i++) {
-      const transcript = event.results[i][0].transcript;
       if (event.results[i].isFinal) {
-        finalTranscript += transcript;
-      } else {
-        interimTranscript += transcript;
+        finalTranscript += event.results[i][0].transcript;
       }
     }
 
-    // Показываем, что слышит компьютер в реальном времени
-    const displayText = finalTranscript || interimTranscript;
-    if (displayText) {
-      document.getElementById('heardText').textContent = displayText;
-    }
-
-    // Проверяем только финальные результаты, чтобы не реагировать на обрывки слов
     if (finalTranscript) {
+      document.getElementById('heardText').textContent = finalTranscript;
       checkWord(finalTranscript.trim());
     }
   };
 
   recognition.onerror = (event) => {
-    console.warn('⚠️ Ошибка микрофона:', event.error);
-    // АГРЕССИВНЫЙ ПЕРЕЗАПУСК при сетевых ошибках (главный секрет стабильности)
+    console.warn('⚠️ Mic error:', event.error);
     if (event.error === 'network' || event.error === 'no-speech' || event.error === 'aborted') {
+      networkErrorCount++;
+      if (networkErrorCount >= 3) {
+        showMicError();
+      }
       if (gameActive) {
         setTimeout(() => {
           try { recognition.start(); } catch(e) {}
-        }, 100);
+        }, 500);
       }
     } else if (event.error === 'not-allowed') {
-      alert('❌ Доступ к микрофону запрещен! Нажмите на значок 🔒 в адресной строке и разрешите доступ.');
+      showMicError();
       gameActive = false;
     }
   };
 
   recognition.onend = () => {
-    console.log('🔄 Перезапуск микрофона...');
-    // Если игра активна, немедленно перезапускаем (предотвращает "засыпание" микрофона)
     if (gameActive) {
       setTimeout(() => {
         try { recognition.start(); } catch(e) {}
-      }, 100);
+      }, 500);
     }
   };
 
   try {
     recognition.start();
   } catch(e) {
-    console.error('Не удалось запустить:', e);
+    console.error('Failed to start:', e);
   }
 }
 
-// === ЛОГИКА ПРОВЕРКИ СЛОВА ===
+function showMicError() {
+  document.getElementById('micDot').classList.remove('active');
+  document.getElementById('micDot').classList.add('error');
+  document.getElementById('micText').textContent = 'NETWORK BLOCK';
+  document.getElementById('micWarning').style.display = 'block';
+}
+
+function setupKeyboardControls() {
+  document.addEventListener('keydown', (e) => {
+    if (!gameActive || currentWordIndex >= words.length) return;
+    
+    if (e.code === 'Space') {
+      e.preventDefault();
+      handleCorrect();
+    }
+    if (e.code === 'Backspace' || e.code === 'ArrowLeft') {
+      e.preventDefault();
+      handleWrong();
+    }
+  });
+}
+
 function checkWord(transcript) {
   if (isJumping || isCrashing || currentWordIndex >= words.length) return;
 
-  const expected = words[currentWordIndex].toLowerCase().replace(/[.,!?;:"'()-]/g, '');
-  const spoken = transcript.toLowerCase().replace(/[.,!?;:"'()-]/g, '');
-  
-  // Разбиваем сказанное на слова
-  const spokenWords = spoken.split(/\s+/).filter(w => w.length > 1); // Игнорируем "э", "а"
+  // Очищаем от ВСЕХ не-буквенных символов для идеального сравнения
+  const expected = words[currentWordIndex].toLowerCase().replace(/[^a-z0-9]/g, '');
+  const spoken = transcript.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const spokenWords = spoken.split(/\s+/).filter(w => w.length > 1);
   
   if (spokenWords.length === 0) return;
 
-  // Проверяем: содержит ли сказанная фраза нужное слово ИЛИ последнее сказанное слово совпадает с нужным
   const lastSpokenWord = spokenWords[spokenWords.length - 1];
+  
+  // Проверяем: содержится ли ожидаемое слово в фразе ИЛИ последнее слово совпадает
   const isCorrect = spoken.includes(expected) || lastSpokenWord === expected;
 
   if (isCorrect) {
     handleCorrect();
   } else {
-    // Реагируем на ошибку только если ребенок сказал какое-то другое полноценное слово
+    // Реагируем на ошибку только если было произнесено другое полноценное слово
     handleWrong();
   }
 }
 
-// === ДВИЖЕНИЕ И АНИМАЦИИ ===
 function startWorldMovement() {
   if (isMoving) return;
   isMoving = true;
@@ -445,7 +459,7 @@ function spawnObstacle() {
   } else {
     const obs = document.createElement('div');
     obs.className = 'obstacle moving';
-    const obstacles = ['🌵', '💩', '🚧'];
+    const obstacles = ['🌵', '💩', '🚧', '🪨'];
     obs.textContent = obstacles[Math.floor(Math.random() * obstacles.length)];
     container.appendChild(obs);
     setTimeout(() => obs.remove(), 3000);
@@ -461,18 +475,16 @@ function handleCorrect() {
   const duck = document.getElementById('duck');
   isJumping = true;
 
-  startWorldMovement(); // Мир оживает
+  startWorldMovement();
 
   duck.classList.add('running');
   duck.classList.remove('jumping');
-  void duck.offsetWidth; // Перезапуск CSS анимации
+  void duck.offsetWidth;
   duck.classList.add('jumping');
 
   setTimeout(() => {
     duck.classList.remove('jumping');
     isJumping = false;
-    
-    // Останавливаем мир после приземления
     setTimeout(() => {
       duck.classList.remove('running');
       stopWorldMovement();
@@ -504,7 +516,7 @@ function handleWrong() {
 
   const duck = document.getElementById('duck');
   duck.classList.remove('running');
-  stopWorldMovement(); // Мир замирает
+  stopWorldMovement();
   duck.classList.remove('crash');
   void duck.offsetWidth;
   duck.classList.add('crash');
